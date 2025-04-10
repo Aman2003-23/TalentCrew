@@ -41,8 +41,14 @@ st.sidebar.markdown("---")
 # Navigation
 page = st.sidebar.radio(
     "Navigation",
-    ["Dashboard", "HR Chatbot"]
+    ["Dashboard", "Candidates", "Jobs", "HR Chatbot"]
 )
+
+if page == "Candidates":
+    candidate_view = st.sidebar.radio(
+        "Candidate View",
+        ["All Candidates", "Sourced", "Screened", "Engaged", "Scheduled"]
+    )
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("## About")
@@ -54,5 +60,13 @@ st.sidebar.info(
 # Main content
 if page == "Dashboard":
     dashboard.render()
+elif page == "Candidates":
+    # Import the candidates component dynamically
+    from components import candidates
+    candidates.render(view=candidate_view)
+elif page == "Jobs":
+    # Import the jobs component dynamically
+    from components import jobs
+    jobs.render()
 else:
     chatbot.render()
