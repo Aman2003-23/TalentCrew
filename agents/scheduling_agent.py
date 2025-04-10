@@ -40,33 +40,9 @@ class SchedulingAgent:
             for i, (candidate_id, metadata, resume_text) in enumerate(
                 zip(results['ids'], results['metadatas'], results['documents'])
             ):
-                # Simulate API delay
-                time.sleep(0.5)
-                
-                # Generate interview slot
-                interview_datetime = self._generate_interview_slot()
-                
-                # Update candidate metadata
-                metadata.update({
-                    "scheduled": True,
-                    "interview_datetime": interview_datetime.isoformat(),
-                    "stage": "scheduled"
-                })
-                
-                # Update the record
-                collection.update(
-                    ids=[candidate_id],
-                    metadatas=[metadata],
-                    documents=[resume_text]
-                )
-                
-                scheduled_count += 1
-                db.log_activity(
-                    self.name, 
-                    "schedule_interview", 
-                    "success", 
-                    f"Scheduled interview for {metadata.get('name', 'Candidate')} at {interview_datetime.isoformat()}"
-                )
+                result = self._schedule_single_candidate(candidate_id, job_title)
+                if result["success"]:
+                    scheduled_count += 1
             
             self.status = "idle"
             db.log_activity(
@@ -95,6 +71,65 @@ class SchedulingAgent:
     def get_status(self):
         """Get the current status of the agent"""
         return self.status
+    
+    def _schedule_single_candidate(self, candidate_id, job_title):
+        """Schedule a single candidate"""
+        try:
+            # Get ChromaDB client
+            client = st.session_state.chroma_client
+            collection = client.get_collection(db.CANDIDATE_COLLECTION)
+            
+            # Get the candidate record
+            result = collection.get(ids=[candidate_id])
+            
+            if not result or 'metadatas' not in result or not result['metadatas']:
+                return {
+                    "success": False,
+                    "message": f"Candidate not found"
+                }
+            
+            metadata = result['metadatas'][0]
+            resume_text = result['documents'][0]
+            
+            # Simulate API delay
+            time.sleep(0.5)
+            
+            # Generate interview slot
+            interview_datetime = self._generate_interview_slot()
+            
+            # Update candidate metadata
+            metadata.update({
+                "scheduled": True,
+                "interview_datetime": interview_datetime.isoformat(),
+                "stage": "scheduled"
+            })
+            
+            # Update the record
+            collection.update(
+                ids=[candidate_id],
+                metadatas=[metadata],
+                documents=[resume_text]
+            )
+            
+            db.log_activity(
+                self.name, 
+                "schedule_interview", 
+                "success", 
+                f"Scheduled interview for {metadata.get('name', 'Candidate')} at {interview_datetime.isoformat()}"
+            )
+            
+            return {
+                "success": True,
+                "message": f"Successfully scheduled interview at {interview_datetime.isoformat()}"
+            }
+            
+        except Exception as e:
+            db.log_activity(self.name, "schedule_interview", "failed", str(e))
+            
+            return {
+                "success": False,
+                "message": f"Error during scheduling: {str(e)}"
+            }
     
     def _generate_interview_slot(self):
         """

@@ -42,44 +42,11 @@ class ScreeningAgent:
             for i, (candidate_id, metadata, resume_text) in enumerate(
                 zip(results['ids'], results['metadatas'], results['documents'])
             ):
-                # Simulate API delay
-                time.sleep(0.5)
-                
-                # Parse the resume
-                resume_data = parser.parse_resume(resume_text)
-                
-                # Match against job description
-                match_result = parser.match_job_description(resume_data, job_description)
-                
-                # Update candidate record with screening results
-                metadata.update({
-                    "match_score": match_result["match_score"],
-                    "matching_skills": match_result["matching_skills"],
-                    "missing_skills": match_result["missing_skills"],
-                    "experience_match": match_result["experience_match"],
-                    "screened": True
-                })
-                
-                # Determine if candidate should be shortlisted
-                shortlisted = match_result["match_score"] >= self.threshold_score
-                if shortlisted:
-                    metadata["stage"] = "screened"
-                    shortlisted_count += 1
-                
-                # Update the record
-                collection.update(
-                    ids=[candidate_id],
-                    metadatas=[metadata],
-                    documents=[resume_text]
-                )
-                
-                screened_count += 1
-                db.log_activity(
-                    self.name, 
-                    "screen_candidate", 
-                    "success", 
-                    f"Screened {resume_data['name']} with score {match_result['match_score']:.1f}%"
-                )
+                result = self._screen_single_candidate(candidate_id, job_title, job_description)
+                if result["success"]:
+                    screened_count += 1
+                    if result["shortlisted"]:
+                        shortlisted_count += 1
             
             self.status = "idle"
             db.log_activity(
@@ -105,6 +72,87 @@ class ScreeningAgent:
                 "message": f"Error during screening: {str(e)}",
                 "screened_count": screened_count,
                 "shortlisted_count": shortlisted_count
+            }
+    
+    def _screen_single_candidate(self, candidate_id, job_title, job_description):
+        """Screen a single candidate"""
+        try:
+            # Get ChromaDB client
+            client = st.session_state.chroma_client
+            collection = client.get_collection(db.CANDIDATE_COLLECTION)
+            
+            # Get the candidate record
+            result = collection.get(ids=[candidate_id])
+            
+            if not result or 'metadatas' not in result or not result['metadatas']:
+                return {
+                    "success": False,
+                    "message": f"Candidate not found",
+                    "shortlisted": False
+                }
+            
+            metadata = result['metadatas'][0]
+            resume_text = result['documents'][0]
+            
+            # Simulate API delay
+            time.sleep(0.5)
+            
+            # Parse the resume
+            resume_data = parser.parse_resume(resume_text)
+            
+            # Match against job description
+            match_result = parser.match_job_description(resume_data, job_description)
+            
+            # Make sure matching_skills and missing_skills are converted to strings
+            matching_skills = match_result["matching_skills"]
+            if isinstance(matching_skills, list):
+                matching_skills = ", ".join(matching_skills)
+                
+            missing_skills = match_result["missing_skills"]
+            if isinstance(missing_skills, list):
+                missing_skills = ", ".join(missing_skills)
+            
+            # Update candidate record with screening results
+            metadata.update({
+                "match_score": match_result["match_score"],
+                "matching_skills": matching_skills,
+                "missing_skills": missing_skills,
+                "experience_match": match_result["experience_match"],
+                "screened": True
+            })
+            
+            # Determine if candidate should be shortlisted
+            shortlisted = match_result["match_score"] >= self.threshold_score
+            if shortlisted:
+                metadata["stage"] = "screened"
+            
+            # Update the record
+            collection.update(
+                ids=[candidate_id],
+                metadatas=[metadata],
+                documents=[resume_text]
+            )
+            
+            db.log_activity(
+                self.name, 
+                "screen_candidate", 
+                "success", 
+                f"Screened {resume_data['name']} with score {match_result['match_score']:.1f}%"
+            )
+            
+            return {
+                "success": True,
+                "message": f"Successfully screened candidate with score {match_result['match_score']:.1f}%",
+                "shortlisted": shortlisted
+            }
+            
+        except Exception as e:
+            db.log_activity(self.name, "screen_candidate", "failed", str(e))
+            
+            return {
+                "success": False,
+                "message": f"Error during screening: {str(e)}",
+                "shortlisted": False
             }
     
     def get_status(self):

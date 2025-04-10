@@ -41,46 +41,11 @@ class EngagementAgent:
             for i, (candidate_id, metadata, resume_text) in enumerate(
                 zip(results['ids'], results['metadatas'], results['documents'])
             ):
-                # Simulate API delay
-                time.sleep(0.5)
-                
-                # Generate engagement message
-                engagement_message = self._generate_engagement_message(
-                    candidate_name=metadata.get("name", "Candidate"),
-                    job_title=job_title,
-                    matching_skills=metadata.get("matching_skills", [])
-                )
-                
-                # Simulate candidate response (in a real system, this would be an actual response)
-                is_interested = self._simulate_candidate_interest(metadata.get("match_score", 0))
-                
-                # Update candidate metadata
-                metadata.update({
-                    "engaged": True,
-                    "engagement_message": engagement_message,
-                    "is_interested": is_interested
-                })
-                
-                # Update stage if interested
-                if is_interested:
-                    metadata["stage"] = "engaged"
-                    interested_count += 1
-                
-                # Update the record
-                collection.update(
-                    ids=[candidate_id],
-                    metadatas=[metadata],
-                    documents=[resume_text]
-                )
-                
-                engaged_count += 1
-                interest_status = "interested" if is_interested else "not interested"
-                db.log_activity(
-                    self.name, 
-                    "engage_candidate", 
-                    "success", 
-                    f"Engaged {metadata.get('name', 'Candidate')} who was {interest_status}"
-                )
+                result = self._engage_single_candidate(candidate_id, job_title)
+                if result["success"]:
+                    engaged_count += 1
+                    if result["interested"]:
+                        interested_count += 1
             
             self.status = "idle"
             db.log_activity(
@@ -155,6 +120,85 @@ class EngagementAgent:
         """
         
         return template
+    
+    def _engage_single_candidate(self, candidate_id, job_title):
+        """Engage a single candidate"""
+        try:
+            # Get ChromaDB client
+            client = st.session_state.chroma_client
+            collection = client.get_collection(db.CANDIDATE_COLLECTION)
+            
+            # Get the candidate record
+            result = collection.get(ids=[candidate_id])
+            
+            if not result or 'metadatas' not in result or not result['metadatas']:
+                return {
+                    "success": False,
+                    "message": f"Candidate not found",
+                    "interested": False
+                }
+            
+            metadata = result['metadatas'][0]
+            resume_text = result['documents'][0]
+            
+            # Simulate API delay
+            time.sleep(0.5)
+            
+            # Extract matching skills
+            matching_skills = metadata.get("matching_skills", [])
+            if isinstance(matching_skills, str):
+                matching_skills = matching_skills.split(", ")
+            
+            # Generate engagement message
+            engagement_message = self._generate_engagement_message(
+                candidate_name=metadata.get("name", "Candidate"),
+                job_title=job_title,
+                matching_skills=matching_skills
+            )
+            
+            # Simulate candidate response (in a real system, this would be an actual response)
+            is_interested = self._simulate_candidate_interest(metadata.get("match_score", 0))
+            
+            # Update candidate metadata
+            metadata.update({
+                "engaged": True,
+                "engagement_message": engagement_message,
+                "is_interested": is_interested
+            })
+            
+            # Update stage if interested
+            if is_interested:
+                metadata["stage"] = "engaged"
+            
+            # Update the record
+            collection.update(
+                ids=[candidate_id],
+                metadatas=[metadata],
+                documents=[resume_text]
+            )
+            
+            interest_status = "interested" if is_interested else "not interested"
+            db.log_activity(
+                self.name, 
+                "engage_candidate", 
+                "success", 
+                f"Engaged {metadata.get('name', 'Candidate')} who was {interest_status}"
+            )
+            
+            return {
+                "success": True,
+                "message": f"Successfully engaged candidate who was {interest_status}",
+                "interested": is_interested
+            }
+            
+        except Exception as e:
+            db.log_activity(self.name, "engage_candidate", "failed", str(e))
+            
+            return {
+                "success": False,
+                "message": f"Error during engagement: {str(e)}",
+                "interested": False
+            }
     
     def _simulate_candidate_interest(self, match_score):
         """
