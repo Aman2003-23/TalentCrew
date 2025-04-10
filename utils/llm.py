@@ -10,12 +10,13 @@ def get_llm():
     Initialize the Google Flan T5 Large model from Hugging Face Hub
     """
     try:
-        # Using Google Flan T5 Large
-        repo_id = "deepseek-ai/DeepSeek-V3-0324"  # This is an open model that doesn't require API key
+        # Using a smaller, open-access model
+        repo_id = "google/flan-t5-small"  # This is an open model that doesn't require API key
         
         # Fallback models if the primary one fails
         fallback_models = [
-            "manycore-research/SpatialLM-Llama-1B"
+            "facebook/opt-125m",
+            "EleutherAI/pythia-70m"
         ]
         
         # Get HF token from environment
