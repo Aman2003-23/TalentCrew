@@ -1,0 +1,166 @@
+1. 🧠 Core Functional Modules
+1.1. Sourcing Agent
+Purpose: Automate extraction of candidate profiles from:
+
+Job boards (LinkedIn, Indeed, etc.)
+
+Internal databases
+
+Social media platforms
+
+Technology:
+
+Web scraping or API-based sourcing
+
+Python-based crawlers
+
+1.2. Screening Agent
+Purpose: Assess candidate resumes using NLP and rank based on job fitment
+
+Functionality:
+
+Parse resumes using NLP
+
+Match with job description keywords, skills, years of experience
+
+Evaluate cultural fit using sentiment analysis on candidate statements
+
+Tech Stack:
+
+SpaCy / Transformers
+
+LangChain for LLM orchestration
+
+1.3. Engagement Agent
+Purpose: Engage candidates through AI-driven conversational messaging
+
+Functionality:
+
+Respond to queries
+
+Share job-related details
+
+Confirm interest and availability
+
+Tech Stack:
+
+LangChain with LLM (GPT-based) chat integration
+
+1.4. Scheduling Agent
+Purpose: Automate interview scheduling between recruiters and candidates
+
+Functionality:
+
+Access HR calendar APIs (Google Calendar, Outlook)
+
+Send confirmation messages
+
+Update status in DB
+
+Tech Stack:
+
+Python schedule, Google Calendar API
+
+2. 📊 Dashboard
+2.1. Features
+Visualize the recruitment pipeline:
+
+Number of candidates sourced
+
+Number screened & shortlisted
+
+Interview scheduling status
+
+Engagement success rate
+
+Real-time status per agent
+
+Button to Start Automation of the entire workflow
+
+2.2. Tech Stack
+Frontend: Streamlit
+
+Charts: Plotly or Altair
+
+Backend: Python
+
+Database: ChromaDB (via LangChain vector store)
+
+3. 🤖 Conversational HR Chatbot
+3.1. Purpose
+Allow Talent Acquisition Manager to chat in real-time to:
+
+Get candidate status
+
+Trigger/restart agents
+
+Receive recommendations and alerts
+
+3.2. Features
+Streamlit chat UI
+
+Backend powered by LangChain LLM agent
+
+Answers based on:
+
+Logs stored in ChromaDB
+
+Metadata from all agents
+
+Querying across status & metrics
+
+4. 🧩 Architecture Overview
+plaintext
+Copy
+Edit
+Streamlit UI
+ ├── Dashboard (Charts + Control Button)
+ ├── Chatbot Interface (LangChain Agent)
+ └── Triggered Workflows
+
+Backend Services (Python Scripts)
+ ├── Sourcing Agent
+ ├── Screening Agent
+ ├── Engagement Agent
+ └── Scheduling Agent
+
+LangChain Orchestration
+ ├── Agent Chains
+ ├── Prompt Engineering
+ └── Knowledge Retrieval via ChromaDB
+
+Database
+ └── ChromaDB (storing resume vectors, logs, status updates)
+5. 🧪 Technical Stack
+Component	Tech Stack
+Frontend	Streamlit
+Backend	Python
+LLM Orchestration	LangChain
+Chatbot	OpenAI API / Llama2 (via LangChain)
+Database	ChromaDB
+Visualization	Plotly / Altair
+Resume Parsing	SpaCy / PyMuPDF / PDFPlumber
+Scheduling	Google Calendar API
+6. 🧱 Non-Functional Requirements
+Modular codebase for each agent
+
+Real-time chatbot response (max 1-2 sec latency)
+
+Scalable data storage using ChromaDB
+
+Secure access to candidate data
+
+Logging and error handling for all workflows
+
+7. ✅ Deliverables
+ Streamlit-based frontend with dashboard and chatbot
+
+ Fully functional sourcing, screening, engagement, and scheduling agents
+
+ LangChain-powered chatbot for HR queries
+
+ Visual analytics dashboard with a global Start Automation button
+
+ ChromaDB integration for all data storage and retrieval
+
+ Documentation and deployment guide
