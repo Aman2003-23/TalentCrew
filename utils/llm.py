@@ -2,7 +2,7 @@ import os
 from langchain.chains import ConversationChain
 from langchain.prompts import PromptTemplate
 from langchain.memory import ConversationBufferMemory
-from langchain.llms import HuggingFaceHub
+from langchain_community.llms import HuggingFaceHub
 import streamlit as st
 
 def get_llm():

@@ -1,8 +1,8 @@
 import os
 import chromadb
 from chromadb.config import Settings
-from langchain.vectorstores import Chroma
-from langchain.embeddings.fake import FakeEmbeddings
+from langchain_community.vectorstores import Chroma
+from langchain_community.embeddings.fake import FakeEmbeddings
 import streamlit as st
 
 # Default collection names
