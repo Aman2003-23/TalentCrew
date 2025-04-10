@@ -11,13 +11,11 @@ def get_llm():
     """
     try:
         # Using Google Flan T5 Large
-        repo_id = "google/flan-t5-large"  # This is an open model that doesn't require API key
+        repo_id = "deepseek-ai/DeepSeek-V3-0324"  # This is an open model that doesn't require API key
         
         # Fallback models if the primary one fails
         fallback_models = [
-            "google/flan-t5-base",
-            "google/flan-t5-small",
-            "EleutherAI/gpt-neo-125M"
+            "manycore-research/SpatialLM-Llama-1B"
         ]
         
         # Get HF token from environment
