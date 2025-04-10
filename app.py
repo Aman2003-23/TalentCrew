@@ -1,6 +1,7 @@
 import streamlit as st
 from components import dashboard, chatbot
 from utils import db
+from agents import sourcing_agent, screening_agent, engagement_agent, scheduling_agent
 
 # Set up page configuration
 st.set_page_config(
@@ -18,6 +19,19 @@ if 'db_initialized' not in st.session_state:
 if not st.session_state.db_initialized:
     db.initialize_db()
     st.session_state.db_initialized = True
+
+# Initialize the agents if they don't exist in session state
+if 'sourcing_agent' not in st.session_state:
+    st.session_state.sourcing_agent = sourcing_agent.SourcingAgent()
+
+if 'screening_agent' not in st.session_state:
+    st.session_state.screening_agent = screening_agent.ScreeningAgent()
+
+if 'engagement_agent' not in st.session_state:
+    st.session_state.engagement_agent = engagement_agent.EngagementAgent()
+
+if 'scheduling_agent' not in st.session_state:
+    st.session_state.scheduling_agent = scheduling_agent.SchedulingAgent()
 
 # Sidebar
 st.sidebar.title("TalentCrew")

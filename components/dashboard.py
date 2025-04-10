@@ -5,19 +5,6 @@ import pandas as pd
 from utils import db
 from agents import sourcing_agent, screening_agent, engagement_agent, scheduling_agent
 
-# Initialize agents if they don't exist in session state
-if 'sourcing_agent' not in st.session_state:
-    st.session_state.sourcing_agent = sourcing_agent.SourcingAgent()
-
-if 'screening_agent' not in st.session_state:
-    st.session_state.screening_agent = screening_agent.ScreeningAgent()
-
-if 'engagement_agent' not in st.session_state:
-    st.session_state.engagement_agent = engagement_agent.EngagementAgent()
-
-if 'scheduling_agent' not in st.session_state:
-    st.session_state.scheduling_agent = scheduling_agent.SchedulingAgent()
-
 def render():
     st.title("TalentCrew Dashboard")
     
