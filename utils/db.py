@@ -2,7 +2,7 @@ import os
 import chromadb
 from chromadb.config import Settings
 from langchain.vectorstores import Chroma
-from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.embeddings.fake import FakeEmbeddings
 import streamlit as st
 
 # Default collection names
@@ -46,10 +46,8 @@ def initialize_db():
 def get_langchain_db(collection_name=CANDIDATE_COLLECTION):
     """Get a LangChain vector store for the specified collection"""
     try:
-        # Use HuggingFace embeddings
-        embeddings = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-MiniLM-L6-v2"
-        )
+        # Use Fake embeddings for demo purposes
+        embeddings = FakeEmbeddings(size=768)  # Using standard embedding size
         
         # Create/get vector store
         vectorstore = Chroma(
