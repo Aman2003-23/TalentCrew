@@ -20,29 +20,50 @@ def get_llm():
             "EleutherAI/gpt-neo-125M"
         ]
         
-        # Initialize Hugging Face model
-        llm = HuggingFaceHub(
-            repo_id=repo_id,
-            model_kwargs={"temperature": 0.7, "max_length": 512}
-        )
+        # Get HF token from environment
+        hf_token = os.getenv("HUGGINGFACE_API_KEY", None)
         
-        return llm
-    except Exception as e:
-        st.error(f"Error initializing Google Flan T5 Large: {str(e)}")
-        # Try fallback models
-        for fallback in fallback_models:
-            try:
-                st.warning(f"Trying fallback model: {fallback}")
+        # Initialize Hugging Face model
+        try:
+            if hf_token:
                 llm = HuggingFaceHub(
-                    repo_id=fallback,
-                    model_kwargs={"temperature": 0.7, "max_length": 256}
+                    repo_id=repo_id,
+                    huggingfacehub_api_token=hf_token,
+                    model_kwargs={"temperature": 0.7, "max_length": 512}
                 )
-                return llm
-            except Exception as e2:
-                st.error(f"Failed with fallback model {fallback}: {str(e2)}")
-                continue
-                
-        st.error("Failed to initialize any model. Chat functionality will be limited.")
+            else:
+                # Without API key, try model without authentication
+                llm = HuggingFaceHub(
+                    repo_id=repo_id,
+                    model_kwargs={"temperature": 0.7, "max_length": 512}
+                )
+            return llm
+        except Exception as primary_error:
+            st.error(f"Error with primary model: {str(primary_error)}")
+            
+            # Try fallback models
+            for fallback in fallback_models:
+                try:
+                    st.warning(f"Trying fallback model: {fallback}")
+                    if hf_token:
+                        llm = HuggingFaceHub(
+                            repo_id=fallback,
+                            huggingfacehub_api_token=hf_token,
+                            model_kwargs={"temperature": 0.7, "max_length": 256}
+                        )
+                    else:
+                        llm = HuggingFaceHub(
+                            repo_id=fallback,
+                            model_kwargs={"temperature": 0.7, "max_length": 256}
+                        )
+                    return llm
+                except Exception as fallback_error:
+                    st.error(f"Failed with fallback model {fallback}: {str(fallback_error)}")
+                    continue
+            
+            raise Exception("All models failed to initialize")
+    except Exception as e:
+        st.error(f"Error initializing LLM: {str(e)}")
         return None
 
 def get_conversation_chain():

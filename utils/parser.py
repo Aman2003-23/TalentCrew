@@ -110,7 +110,7 @@ def parse_resume(resume_text):
     except Exception as e:
         st.error(f"Error parsing resume: {str(e)}")
         return {
-            "name": "Unknown",
+            "name": "Unknown Candidate",
             "email": "unknown@example.com",
             "skills": [],
             "experience_years": 0,

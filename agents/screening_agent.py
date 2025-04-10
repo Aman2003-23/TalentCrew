@@ -97,11 +97,48 @@ class ScreeningAgent:
             # Simulate API delay
             time.sleep(0.5)
             
-            # Parse the resume
-            resume_data = parser.parse_resume(resume_text)
+            # Parse the resume with defensive error handling
+            try:
+                resume_data = parser.parse_resume(resume_text)
+                if not resume_data or not isinstance(resume_data, dict):
+                    # Fallback if parsing fails completely
+                    resume_data = {
+                        "name": metadata.get("name", "Unknown Candidate"),
+                        "email": metadata.get("email", "unknown@example.com"),
+                        "skills": [],
+                        "experience_years": 0,
+                        "raw_text": resume_text
+                    }
+            except Exception as parsing_error:
+                st.error(f"Error parsing resume: {str(parsing_error)}")
+                # Use metadata for fallback
+                resume_data = {
+                    "name": metadata.get("name", "Unknown Candidate"),
+                    "email": metadata.get("email", "unknown@example.com"),
+                    "skills": [],
+                    "experience_years": 0,
+                    "raw_text": resume_text
+                }
             
-            # Match against job description
-            match_result = parser.match_job_description(resume_data, job_description)
+            # Match against job description with defensive error handling
+            try:
+                match_result = parser.match_job_description(resume_data, job_description)
+                if not match_result or not isinstance(match_result, dict):
+                    # Fallback if matching fails
+                    match_result = {
+                        "match_score": 0,
+                        "matching_skills": [],
+                        "missing_skills": [],
+                        "experience_match": False
+                    }
+            except Exception as matching_error:
+                st.error(f"Error matching job description: {str(matching_error)}")
+                match_result = {
+                    "match_score": 0,
+                    "matching_skills": [],
+                    "missing_skills": [],
+                    "experience_match": False
+                }
             
             # Make sure matching_skills and missing_skills are converted to strings
             matching_skills = match_result.get("matching_skills", [])
@@ -118,8 +155,10 @@ class ScreeningAgent:
                 experience_match = "Yes" if experience_match else "No"
             
             # Update candidate record with screening results
+            match_score = float(match_result.get("match_score", 0))
+            
             metadata.update({
-                "match_score": match_result.get("match_score", 0),
+                "match_score": match_score,
                 "matching_skills": matching_skills,
                 "missing_skills": missing_skills,
                 "experience_match": experience_match,
@@ -127,7 +166,6 @@ class ScreeningAgent:
             })
             
             # Determine if candidate should be shortlisted
-            match_score = match_result.get("match_score", 0)
             shortlisted = match_score >= self.threshold_score
             if shortlisted:
                 metadata["stage"] = "screened"
