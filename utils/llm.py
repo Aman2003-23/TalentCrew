@@ -11,12 +11,12 @@ def get_llm():
     """
     try:
         # Using a smaller, open-access model
-        repo_id = "google/flan-t5-small"  # This is an open model that doesn't require API key
+        repo_id = "deepseek-ai/DeepSeek-V3-0324"  # This is an open model that doesn't require API key
         
         # Fallback models if the primary one fails
         fallback_models = [
-            "facebook/opt-125m",
-            "EleutherAI/pythia-70m"
+            "openfree/Llama-3_3-Nemotron-Super-49B-v1-Q6_K-GGUF",
+           
         ]
         
         # Get HF token from environment
