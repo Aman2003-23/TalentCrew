@@ -104,25 +104,31 @@ class ScreeningAgent:
             match_result = parser.match_job_description(resume_data, job_description)
             
             # Make sure matching_skills and missing_skills are converted to strings
-            matching_skills = match_result["matching_skills"]
+            matching_skills = match_result.get("matching_skills", [])
             if isinstance(matching_skills, list):
                 matching_skills = ", ".join(matching_skills)
                 
-            missing_skills = match_result["missing_skills"]
+            missing_skills = match_result.get("missing_skills", [])
             if isinstance(missing_skills, list):
                 missing_skills = ", ".join(missing_skills)
             
+            # Handle the experience_match which might be a boolean
+            experience_match = match_result.get("experience_match", False)
+            if isinstance(experience_match, bool):
+                experience_match = "Yes" if experience_match else "No"
+            
             # Update candidate record with screening results
             metadata.update({
-                "match_score": match_result["match_score"],
+                "match_score": match_result.get("match_score", 0),
                 "matching_skills": matching_skills,
                 "missing_skills": missing_skills,
-                "experience_match": match_result["experience_match"],
+                "experience_match": experience_match,
                 "screened": True
             })
             
             # Determine if candidate should be shortlisted
-            shortlisted = match_result["match_score"] >= self.threshold_score
+            match_score = match_result.get("match_score", 0)
+            shortlisted = match_score >= self.threshold_score
             if shortlisted:
                 metadata["stage"] = "screened"
             
@@ -137,12 +143,12 @@ class ScreeningAgent:
                 self.name, 
                 "screen_candidate", 
                 "success", 
-                f"Screened {resume_data['name']} with score {match_result['match_score']:.1f}%"
+                f"Screened {resume_data['name']} with score {match_score:.1f}%"
             )
             
             return {
                 "success": True,
-                "message": f"Successfully screened candidate with score {match_result['match_score']:.1f}%",
+                "message": f"Successfully screened candidate with score {match_score:.1f}%",
                 "shortlisted": shortlisted
             }
             

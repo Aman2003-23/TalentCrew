@@ -7,47 +7,43 @@ import streamlit as st
 
 def get_llm():
     """
-    Initialize the Llama model from Hugging Face Hub
+    Initialize the Google Flan T5 Large model from Hugging Face Hub
     """
     try:
-        # Using Llama 2 for the HR chatbot
-        repo_id = "meta-llama/Llama-2-7b-chat-hf"  # This is a popular model choice, but may require access approval
+        # Using Google Flan T5 Large
+        repo_id = "google/flan-t5-large"  # This is an open model that doesn't require API key
         
-        # Fallback to a more accessible model if Llama isn't available
+        # Fallback models if the primary one fails
         fallback_models = [
-            "tiiuae/falcon-7b-instruct",
-            "EleutherAI/gpt-neo-1.3B",
-            "facebook/opt-1.3b"
+            "google/flan-t5-base",
+            "google/flan-t5-small",
+            "EleutherAI/gpt-neo-125M"
         ]
-        
-        # Get HF token from environment
-        hf_token = os.getenv("HUGGINGFACE_TOKEN", None)
-        
-        if not hf_token:
-            st.warning("HUGGINGFACE_TOKEN not found in environment variables. Using a fallback model.")
-            repo_id = fallback_models[0]  # Use first fallback model
         
         # Initialize Hugging Face model
         llm = HuggingFaceHub(
             repo_id=repo_id,
-            huggingfacehub_api_token=hf_token,
             model_kwargs={"temperature": 0.7, "max_length": 512}
         )
         
         return llm
     except Exception as e:
-        st.error(f"Error initializing LLM: {str(e)}")
-        # As a fallback, use a very basic model that should be accessible
-        try:
-            llm = HuggingFaceHub(
-                repo_id="EleutherAI/gpt-neo-125M",  # Very small model as last resort
-                huggingfacehub_api_token=hf_token,
-                model_kwargs={"temperature": 0.7}
-            )
-            return llm
-        except:
-            st.error("Failed to initialize even the fallback model. Chat functionality will be limited.")
-            return None
+        st.error(f"Error initializing Google Flan T5 Large: {str(e)}")
+        # Try fallback models
+        for fallback in fallback_models:
+            try:
+                st.warning(f"Trying fallback model: {fallback}")
+                llm = HuggingFaceHub(
+                    repo_id=fallback,
+                    model_kwargs={"temperature": 0.7, "max_length": 256}
+                )
+                return llm
+            except Exception as e2:
+                st.error(f"Failed with fallback model {fallback}: {str(e2)}")
+                continue
+                
+        st.error("Failed to initialize any model. Chat functionality will be limited.")
+        return None
 
 def get_conversation_chain():
     """

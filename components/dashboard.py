@@ -96,10 +96,22 @@ def render():
     st.subheader("Start Recruitment Automation")
     
     with st.form("recruitment_form"):
-        job_title = st.text_input("Job Title", "Software Engineer")
+        job_positions = [
+            "Software Engineer",
+            "Data Scientist",
+            "Product Manager",
+            "UX Designer",
+            "DevOps Engineer",
+            "Marketing Specialist",
+            "Sales Representative",
+            "HR Manager"
+        ]
         
-        job_description = st.text_area("Job Description", 
-            """
+        job_title = st.selectbox("Job Title", job_positions)
+        
+        # Default job descriptions based on selected position
+        job_descriptions = {
+            "Software Engineer": """
             We are looking for a Software Engineer with 3+ years of experience in Python development.
             
             Required Skills:
@@ -112,8 +124,116 @@ def render():
             - Machine Learning experience
             - Cloud services (AWS, GCP, Azure)
             - Docker and Kubernetes
+            """,
+            
+            "Data Scientist": """
+            We are seeking a Data Scientist with experience in machine learning and data analysis.
+            
+            Required Skills:
+            - Python or R
+            - Machine Learning frameworks (TensorFlow, PyTorch, scikit-learn)
+            - SQL and NoSQL databases
+            - Data visualization
+            
+            Nice to have:
+            - PhD or MS in a quantitative field
+            - Industry experience
+            - Production ML systems
+            """,
+            
+            "Product Manager": """
+            We are looking for a Product Manager to drive our product strategy and roadmap.
+            
+            Required Skills:
+            - 4+ years of product management experience
+            - Agile methodologies
+            - User research and analytics
+            - Cross-functional leadership
+            
+            Nice to have:
+            - Technical background
+            - UX design experience
+            - Market research expertise
+            """,
+            
+            "UX Designer": """
+            We are hiring a UX Designer to create intuitive and engaging user experiences.
+            
+            Required Skills:
+            - 3+ years of UX design experience
+            - Wireframing and prototyping
+            - User research and testing
+            - Figma, Sketch, or Adobe XD
+            
+            Nice to have:
+            - UI design skills
+            - Front-end development knowledge
+            - Experience with design systems
+            """,
+            
+            "DevOps Engineer": """
+            We need a DevOps Engineer to automate and optimize our infrastructure.
+            
+            Required Skills:
+            - 3+ years of DevOps experience
+            - Docker and Kubernetes
+            - CI/CD pipelines
+            - Cloud platforms (AWS, GCP, Azure)
+            
+            Nice to have:
+            - Infrastructure as Code (Terraform, CloudFormation)
+            - Security expertise
+            - Monitoring and observability
+            """,
+            
+            "Marketing Specialist": """
+            We're looking for a Marketing Specialist to drive brand awareness and lead generation.
+            
+            Required Skills:
+            - 2+ years of marketing experience
+            - Content creation and management
+            - Social media campaigns
+            - Analytics and reporting
+            
+            Nice to have:
+            - SEO/SEM expertise
+            - Graphic design skills
+            - Marketing automation
+            """,
+            
+            "Sales Representative": """
+            We are seeking a Sales Representative to grow our customer base and revenue.
+            
+            Required Skills:
+            - 3+ years of sales experience
+            - CRM software proficiency
+            - Prospecting and lead qualification
+            - Negotiation and closing
+            
+            Nice to have:
+            - Industry experience
+            - Sales methodology training
+            - Enterprise sales experience
+            """,
+            
+            "HR Manager": """
+            We need an HR Manager to oversee recruitment and employee relations.
+            
+            Required Skills:
+            - 5+ years of HR experience
+            - Employee relations
+            - Recruitment and talent acquisition
+            - HR policies and compliance
+            
+            Nice to have:
+            - HRIS implementation
+            - Training and development
+            - Compensation and benefits
             """
-        )
+        }
+        
+        default_description = job_descriptions.get(job_title, "Please provide a job description.")
+        job_description = st.text_area("Job Description", default_description)
         
         candidate_count = st.slider("Number of Candidates to Source", 3, 15, 5)
         
