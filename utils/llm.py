@@ -16,7 +16,6 @@ def get_llm():
         # Fallback models if the primary one fails
         fallback_models = [
             "openfree/Llama-3_3-Nemotron-Super-49B-v1-Q6_K-GGUF",
-           
         ]
         
         # Get HF token from environment
